@@ -12,7 +12,7 @@ ConfigureMaplePath()
 
 # Now import Application from Maple
 from Maple.Application import Application
-
+from Maple.Log import *
 
 class SandboxApp:
     """
@@ -27,7 +27,7 @@ class SandboxApp:
     
     def Run(self):
         """Run the sandbox application."""
-        print("Starting SandboxApp...")
+        MAPLE_CORE_INFO("Starting SandboxApp...")
         self.App.Run()
 
 
