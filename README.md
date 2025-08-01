@@ -1,4 +1,6 @@
-# Maple 🍁
+# Maple
+
+![Maple's LOGO](Resources/Branding/LOGO.png)
 
 A universal application framework and template library for Python projects.
 
