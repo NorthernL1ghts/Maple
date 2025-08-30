@@ -14,6 +14,6 @@
 
 #include "Maple/Log.h"
 
-#ifdef MP_PLATFORM_WINDOWS
-	#include <Windows.h>
-#endif
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>

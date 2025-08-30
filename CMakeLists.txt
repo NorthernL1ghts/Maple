@@ -49,6 +49,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glfw)
 
 # -----------------------------
+# glad (from vendor folder)
+# -----------------------------
+set(GLAD_DIR ${CMAKE_SOURCE_DIR}/vendor/glad)
+add_library(glad ${GLAD_DIR}/src/glad.c)
+target_include_directories(glad PUBLIC ${GLAD_DIR}/include)
+
+# Prevent precompiled header from being applied to glad.c (pure C source)
+set_source_files_properties(${GLAD_DIR}/src/glad.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+
+
+
+# -----------------------------
 # Maple Library
 # -----------------------------
 file(GLOB_RECURSE MAPLE_SRC
@@ -68,7 +80,13 @@ endif()
 add_library(Maple SHARED ${MAPLE_SRC})
 
 target_include_directories(Maple PUBLIC ${CMAKE_SOURCE_DIR}/Maple/src)
-target_link_libraries(Maple PUBLIC spdlog::spdlog glfw)
+target_link_libraries(Maple
+    PUBLIC
+        spdlog::spdlog
+        glfw
+        glad
+        OpenGL::GL
+)
 
 target_compile_definitions(Maple
     PRIVATE MP_BUILD_DLL
@@ -99,7 +117,8 @@ file(GLOB_RECURSE SANDBOX_SRC "${CMAKE_SOURCE_DIR}/Sandbox/src/*.cpp")
 add_executable(Sandbox ${SANDBOX_SRC})
 
 target_include_directories(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src)
-target_link_libraries(Sandbox PRIVATE Maple spdlog::spdlog glfw OpenGL::GL)
+target_link_libraries(Sandbox PRIVATE Maple)
+
 target_compile_definitions(Sandbox PUBLIC MP_PLATFORM_WINDOWS)
 
 # Use same PCH as Maple

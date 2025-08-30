@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Maple/Window.h"
+
 #include <GLFW/glfw3.h>
 
 namespace Maple {
@@ -37,4 +38,5 @@ namespace Maple {
 
 		WindowData m_Data;
 	};
+
 }

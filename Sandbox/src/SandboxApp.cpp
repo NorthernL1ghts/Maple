@@ -1,6 +1,5 @@
 ﻿#include <Maple.h>
 
-
 class ExampleLayer : public Maple::Layer
 {
 public:

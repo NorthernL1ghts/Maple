@@ -1,9 +1,14 @@
-﻿#include "mppch.h"
+﻿// Always include glad first
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#include "mppch.h"
 #include "WindowsWindow.h"
 
 #include "Maple/Events/ApplicationEvent.h"
 #include "Maple/Events/MouseEvent.h"
 #include "Maple/Events/KeyEvent.h"
+
 
 namespace Maple {
 	
@@ -41,14 +46,15 @@ namespace Maple {
 		{
 			// TODO: glfwTerminate on system shutdown
 			int success = glfwInit();
-			MP_CORE_ASSERT(success, "Could not initialize GLFW!");
+			MP_CORE_ASSERT(success, "Could not intialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
-
 			s_GLFWInitialized = true;
 		}
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(m_Window);
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		MP_CORE_ASSERT(status, "Failed to initialize Glad!");
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
@@ -160,4 +166,5 @@ namespace Maple {
 	{
 		return m_Data.VSync;
 	}
+
 }
