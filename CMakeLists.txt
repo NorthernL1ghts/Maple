@@ -55,16 +55,35 @@ file(GLOB_RECURSE MAPLE_SRC
     "${CMAKE_SOURCE_DIR}/Maple/src/Maple/*.cpp"
     "${CMAKE_SOURCE_DIR}/Maple/src/Maple/*.h"
 )
+
+# Include Windows platform-specific files
+if(WIN32)
+    file(GLOB_RECURSE MAPLE_WIN_SRC
+        "${CMAKE_SOURCE_DIR}/Maple/src/Platform/Windows/*.cpp"
+        "${CMAKE_SOURCE_DIR}/Maple/src/Platform/Windows/*.h"
+    )
+    list(APPEND MAPLE_SRC ${MAPLE_WIN_SRC})
+endif()
+
 add_library(Maple SHARED ${MAPLE_SRC})
 
 target_include_directories(Maple PUBLIC ${CMAKE_SOURCE_DIR}/Maple/src)
-target_link_libraries(Maple PUBLIC spdlog::spdlog fmt::fmt glfw)
-target_compile_definitions(Maple PRIVATE MP_BUILD_DLL PUBLIC MP_PLATFORM_WINDOWS)
+target_link_libraries(Maple PUBLIC spdlog::spdlog glfw)
+
+target_compile_definitions(Maple
+    PRIVATE MP_BUILD_DLL
+    PUBLIC MP_PLATFORM_WINDOWS
+)
 
 # Precompiled header
 target_precompile_headers(Maple PRIVATE "${CMAKE_SOURCE_DIR}/Maple/src/mppch.h")
+set_property(TARGET Maple PROPERTY VS_GLOBAL_FORCEINCLUDE "${CMAKE_SOURCE_DIR}/Maple/src/mppch.h")
 
-# Output directories
+# Link OpenGL for Windows
+find_package(OpenGL REQUIRED)
+target_link_libraries(Maple PUBLIC OpenGL::GL)
+
+# Output directories per configuration
 set_target_properties(Maple PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}/$<CONFIG>
     ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR}/$<CONFIG>
@@ -80,13 +99,14 @@ file(GLOB_RECURSE SANDBOX_SRC "${CMAKE_SOURCE_DIR}/Sandbox/src/*.cpp")
 add_executable(Sandbox ${SANDBOX_SRC})
 
 target_include_directories(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src)
-target_link_libraries(Sandbox PRIVATE Maple spdlog::spdlog fmt::fmt glfw)
+target_link_libraries(Sandbox PRIVATE Maple spdlog::spdlog glfw OpenGL::GL)
 target_compile_definitions(Sandbox PUBLIC MP_PLATFORM_WINDOWS)
 
-# Optional: Use the same precompiled header in Sandbox if needed
+# Use same PCH as Maple
 target_precompile_headers(Sandbox PRIVATE "${CMAKE_SOURCE_DIR}/Maple/src/mppch.h")
+set_property(TARGET Sandbox PROPERTY VS_GLOBAL_FORCEINCLUDE "${CMAKE_SOURCE_DIR}/Maple/src/mppch.h")
 
-# Output directories
+# Output directories per configuration
 set_target_properties(Sandbox PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}/$<CONFIG>
     ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR}/$<CONFIG>
