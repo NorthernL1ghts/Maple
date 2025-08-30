@@ -1,10 +1,9 @@
 ﻿
 #pragma once
 
-#include "Maple/Core.h"
+#include "mppch.h"
 
-#include <string>
-#include <functional>
+#include "Maple/Core.h"
 
 namespace Maple {
 

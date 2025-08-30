@@ -1,4 +1,6 @@
-﻿#include "Application.h"
+﻿#include "mppch.h"
+
+#include "Application.h"
 
 #include "Maple/Events/ApplicationEvent.h"
 #include "Maple/Log.h"

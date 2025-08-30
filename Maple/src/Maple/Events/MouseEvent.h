@@ -2,8 +2,6 @@
 
 #include "Event.h"
 
-#include <sstream>
-
 namespace Maple {
 
 	class MAPLE_API MouseMovedEvent : public Event
