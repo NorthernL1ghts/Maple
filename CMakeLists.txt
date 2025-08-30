@@ -16,19 +16,33 @@ set(OUTPUT_DIR ${CMAKE_SOURCE_DIR}/Binaries)
 set(INT_DIR ${CMAKE_SOURCE_DIR}/Intermediates)
 
 # ============================
+# Fetch spdlog automatically
+# ============================
+include(FetchContent)
+
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.12.0
+)
+
+FetchContent_MakeAvailable(spdlog)
+
+# ============================
 # Maple - Shared Library (DLL)
 # ============================
-add_library(Maple SHARED
-    Maple/src/Maple.h
-    Maple/src/Maple/Application.cpp
-    Maple/src/Maple/Application.h
-    Maple/src/Maple/Core.h
-    Maple/src/Maple/EntryPoint.h
+file(GLOB_RECURSE MAPLE_SRC
+    "${CMAKE_SOURCE_DIR}/Maple/src/Maple/*.cpp"
+    "${CMAKE_SOURCE_DIR}/Maple/src/Maple/*.h"
 )
+
+add_library(Maple SHARED ${MAPLE_SRC})
 
 target_include_directories(Maple PUBLIC
     ${CMAKE_SOURCE_DIR}/Maple/src
 )
+
+target_link_libraries(Maple PUBLIC spdlog::spdlog)
 
 # Preprocessor definitions
 target_compile_definitions(Maple
@@ -48,12 +62,14 @@ set_target_properties(Maple PROPERTIES
 # ============================
 # Sandbox - Console Application
 # ============================
-add_executable(Sandbox
-    Sandbox/src/SandboxApp.cpp
+file(GLOB_RECURSE SANDBOX_SRC
+    "${CMAKE_SOURCE_DIR}/Sandbox/src/*.cpp"
 )
 
+add_executable(Sandbox ${SANDBOX_SRC})
+
 # Link Sandbox to Maple
-target_link_libraries(Sandbox PRIVATE Maple)
+target_link_libraries(Sandbox PRIVATE Maple spdlog::spdlog)
 
 # Include Maple headers
 target_include_directories(Sandbox PRIVATE
