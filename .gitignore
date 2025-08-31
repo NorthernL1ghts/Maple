@@ -1,0 +1,28 @@
+# Ignore VS & VSC files
+.vs/
+.vscode/
+
+sln/
+vcxproj/
+vcxproj.filters/
+
+# Ignore CMake files
+CMakeFiles/
+CMakeCache.txt
+
+# Ignore build output directories
+Binaries/
+Intermediates/
+build/
+
+# Ignore user-specific files
+*.user
+*.suo
+*.userprefs
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.temp
