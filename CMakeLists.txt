@@ -16,6 +16,19 @@ set(OUTPUT_DIR ${CMAKE_SOURCE_DIR}/Binaries)
 set(INT_DIR ${CMAKE_SOURCE_DIR}/Intermediates)
 
 # ============================
+# Dependencies (spdlog)
+# ============================
+include(FetchContent)
+
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.13.0 # Use latest stable version
+)
+
+FetchContent_MakeAvailable(spdlog)
+
+# ============================
 # Maple - Shared Library (DLL)
 # ============================
 add_library(Maple SHARED
@@ -35,6 +48,9 @@ target_compile_definitions(Maple
     PRIVATE MP_BUILD_DLL
     PUBLIC MP_PLATFORM_WINDOWS
 )
+
+# Link spdlog
+target_link_libraries(Maple PUBLIC spdlog::spdlog)
 
 # Output and intermediate folders for Maple
 set_target_properties(Maple PROPERTIES
