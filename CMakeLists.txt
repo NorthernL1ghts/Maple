@@ -31,17 +31,14 @@ FetchContent_MakeAvailable(spdlog)
 # ============================
 # Maple - Shared Library (DLL)
 # ============================
-add_library(Maple SHARED
-    Maple/src/Maple.h
-    Maple/src/Maple/Application.cpp
-    Maple/src/Maple/Application.h
-    Maple/src/Maple/Core.h
-    Maple/src/Maple/EntryPoint.h
+# Collect all source/header files under Maple/src
+file(GLOB_RECURSE MAPLE_SOURCES
+    ${CMAKE_SOURCE_DIR}/Maple/src/*.cpp
+    ${CMAKE_SOURCE_DIR}/Maple/src/*.h
 )
 
-target_include_directories(Maple PUBLIC
-    ${CMAKE_SOURCE_DIR}/Maple/src
-)
+add_library(Maple SHARED ${MAPLE_SOURCES})
+
 
 # Preprocessor definitions
 target_compile_definitions(Maple
