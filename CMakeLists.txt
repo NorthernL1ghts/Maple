@@ -23,7 +23,7 @@ include(FetchContent)
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG v1.13.0 # Use latest stable version
+    GIT_TAG v1.13.0
 )
 
 FetchContent_MakeAvailable(spdlog)
@@ -32,20 +32,18 @@ FetchContent_MakeAvailable(spdlog)
 # Maple - Shared Library (DLL)
 # ============================
 # Collect all source/header files under Maple/src
-file(GLOB_RECURSE MAPLE_SOURCES CONFIGURE_DEPENDS
+file(GLOB_RECURSE MAPLE_SOURCES
     ${CMAKE_SOURCE_DIR}/Maple/src/*.cpp
     ${CMAKE_SOURCE_DIR}/Maple/src/*.h
 )
 
-# Exclude EntryPoint.h (should only be used by client apps, not Maple itself)
-list(REMOVE_ITEM MAPLE_SOURCES ${CMAKE_SOURCE_DIR}/Maple/src/Maple/EntryPoint.h)
-
 add_library(Maple SHARED ${MAPLE_SOURCES})
 
-# Include directories (so we can do #include "Maple/...")
-target_include_directories(Maple PUBLIC
-    ${CMAKE_SOURCE_DIR}/Maple/src
-)
+# Precompiled header
+target_precompile_headers(Maple PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src/mppch.h)
+
+# Include directories
+target_include_directories(Maple PUBLIC ${CMAKE_SOURCE_DIR}/Maple/src)
 
 # Preprocessor definitions
 target_compile_definitions(Maple
@@ -56,7 +54,7 @@ target_compile_definitions(Maple
 # Link spdlog
 target_link_libraries(Maple PUBLIC spdlog::spdlog)
 
-# Output and intermediate folders for Maple
+# Output and intermediate folders
 set_target_properties(Maple PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}/$<CONFIG>
     ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR}/$<CONFIG>
@@ -68,24 +66,26 @@ set_target_properties(Maple PROPERTIES
 # ============================
 # Sandbox - Console Application
 # ============================
-add_executable(Sandbox
-    Sandbox/src/SandboxApp.cpp
+file(GLOB_RECURSE SANDBOX_SOURCES
+    ${CMAKE_SOURCE_DIR}/Sandbox/src/*.cpp
+    ${CMAKE_SOURCE_DIR}/Sandbox/src/*.h
 )
+
+add_executable(Sandbox ${SANDBOX_SOURCES})
+
+# Precompiled header for Sandbox (optional)
+target_precompile_headers(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src/mppch.h)
 
 # Link Sandbox to Maple
 target_link_libraries(Sandbox PRIVATE Maple)
 
 # Include Maple headers
-target_include_directories(Sandbox PRIVATE
-    ${CMAKE_SOURCE_DIR}/Maple/src
-)
+target_include_directories(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src)
 
 # Preprocessor definitions
-target_compile_definitions(Sandbox
-    PUBLIC MP_PLATFORM_WINDOWS
-)
+target_compile_definitions(Sandbox PUBLIC MP_PLATFORM_WINDOWS)
 
-# Output and intermediate folders for Sandbox
+# Output and intermediate folders
 set_target_properties(Sandbox PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}/$<CONFIG>
     ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR}/$<CONFIG>

@@ -2,9 +2,6 @@
 
 #include "Maple/Core.h"
 
-#include <string>
-#include <functional>
-
 namespace Maple {
 
 	// Events in Maple are currently blocking, meaning when an event occurs it
