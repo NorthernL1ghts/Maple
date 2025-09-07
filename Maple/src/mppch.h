@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Maple/Log.h"
+
 // Platform-specific last
 #ifdef MP_PLATFORM_WINDOWS
     #ifndef WIN32_LEAN_AND_MEAN

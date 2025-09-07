@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#include "Window.h"
 #include "Events/Event.h"
 
 namespace Maple {
@@ -13,7 +14,8 @@ namespace Maple {
 
 		void Run();
     private:
-        bool m_Running = true;
+		std::unique_ptr<Window> m_Window;
+		bool m_Running = true;
 	};
 
 	// To be defined in CLIENT

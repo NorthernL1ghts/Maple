@@ -42,6 +42,8 @@ FetchContent_MakeAvailable(glfw)
 file(GLOB_RECURSE MAPLE_SOURCES
     ${CMAKE_SOURCE_DIR}/Maple/src/*.cpp
     ${CMAKE_SOURCE_DIR}/Maple/src/*.h
+    ${CMAKE_SOURCE_DIR}/Maple/src/Platform/*.cpp   # Include platform folder
+    ${CMAKE_SOURCE_DIR}/Maple/src/Platform/*.h
 )
 
 add_library(Maple SHARED ${MAPLE_SOURCES})
@@ -50,7 +52,10 @@ add_library(Maple SHARED ${MAPLE_SOURCES})
 target_precompile_headers(Maple PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src/mppch.h)
 
 # Include directories
-target_include_directories(Maple PUBLIC ${CMAKE_SOURCE_DIR}/Maple/src)
+target_include_directories(Maple PUBLIC
+    ${CMAKE_SOURCE_DIR}/Maple/src
+    ${CMAKE_SOURCE_DIR}/Maple/src/Platform
+)
 
 # Preprocessor definitions
 target_compile_definitions(Maple
@@ -58,8 +63,12 @@ target_compile_definitions(Maple
     PUBLIC MP_PLATFORM_WINDOWS
 )
 
-# Link spdlog and GLFW
-target_link_libraries(Maple PUBLIC spdlog::spdlog glfw)
+# Link spdlog, GLFW, and OpenGL
+if(WIN32)
+    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw opengl32)
+else()
+    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw)
+endif()
 
 # Output and intermediate folders
 set_target_properties(Maple PROPERTIES
@@ -87,7 +96,10 @@ target_precompile_headers(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src/mppch.h)
 target_link_libraries(Sandbox PRIVATE Maple)
 
 # Include Maple headers
-target_include_directories(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src)
+target_include_directories(Sandbox PRIVATE
+    ${CMAKE_SOURCE_DIR}/Maple/src
+    ${CMAKE_SOURCE_DIR}/Maple/src/Platform
+)
 
 # Preprocessor definitions
 target_compile_definitions(Sandbox PUBLIC MP_PLATFORM_WINDOWS)
