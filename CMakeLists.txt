@@ -16,22 +16,29 @@ set(OUTPUT_DIR ${CMAKE_SOURCE_DIR}/Binaries)
 set(INT_DIR ${CMAKE_SOURCE_DIR}/Intermediates)
 
 # ============================
-# Dependencies (spdlog)
+# Dependencies
 # ============================
 include(FetchContent)
 
+# spdlog
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
     GIT_TAG v1.13.0
 )
-
 FetchContent_MakeAvailable(spdlog)
+
+# GLFW
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG 3.3.8
+)
+FetchContent_MakeAvailable(glfw)
 
 # ============================
 # Maple - Shared Library (DLL)
 # ============================
-# Collect all source/header files under Maple/src
 file(GLOB_RECURSE MAPLE_SOURCES
     ${CMAKE_SOURCE_DIR}/Maple/src/*.cpp
     ${CMAKE_SOURCE_DIR}/Maple/src/*.h
@@ -51,8 +58,8 @@ target_compile_definitions(Maple
     PUBLIC MP_PLATFORM_WINDOWS
 )
 
-# Link spdlog
-target_link_libraries(Maple PUBLIC spdlog::spdlog)
+# Link spdlog and GLFW
+target_link_libraries(Maple PUBLIC spdlog::spdlog glfw)
 
 # Output and intermediate folders
 set_target_properties(Maple PROPERTIES
