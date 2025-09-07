@@ -1,6 +1,5 @@
 #include "mppch.h"
 #include "Application.h"
-
 #include "Maple/Log.h"
 
 #include <GLFW/glfw3.h>

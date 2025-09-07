@@ -36,14 +36,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
+# GLAD
+set(GLAD_DIR "${CMAKE_SOURCE_DIR}/vendor/glad")
+add_library(glad "${GLAD_DIR}/src/glad.c")
+target_include_directories(glad PUBLIC "${GLAD_DIR}/include")
+
 # ============================
 # Maple - Shared Library (DLL)
 # ============================
 file(GLOB_RECURSE MAPLE_SOURCES
     ${CMAKE_SOURCE_DIR}/Maple/src/*.cpp
     ${CMAKE_SOURCE_DIR}/Maple/src/*.h
-    ${CMAKE_SOURCE_DIR}/Maple/src/Platform/*.cpp
-    ${CMAKE_SOURCE_DIR}/Maple/src/Platform/*.h
 )
 
 add_library(Maple SHARED ${MAPLE_SOURCES})
@@ -52,10 +55,7 @@ add_library(Maple SHARED ${MAPLE_SOURCES})
 target_precompile_headers(Maple PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src/mppch.h)
 
 # Include directories
-target_include_directories(Maple PUBLIC
-    ${CMAKE_SOURCE_DIR}/Maple/src
-    ${CMAKE_SOURCE_DIR}/Maple/src/Platform
-)
+target_include_directories(Maple PUBLIC ${CMAKE_SOURCE_DIR}/Maple/src)
 
 # Preprocessor definitions
 target_compile_definitions(Maple
@@ -63,21 +63,28 @@ target_compile_definitions(Maple
     PUBLIC MP_PLATFORM_WINDOWS
 )
 
-# Force /MD for all MSVC configurations
-if(MSVC)
-    foreach(flag_var
-            CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS_MINSIZEREL
-            CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_MINSIZEREL)
-        string(REPLACE "/MT" "/MD" ${flag_var} "${${flag_var}}")
-        string(REPLACE "/MTd" "/MD" ${flag_var} "${${flag_var}}")
-    endforeach()
+# Link spdlog, GLFW, GLAD, and OpenGL
+if(WIN32)
+    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw glad opengl32)
+else()
+    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw glad)
 endif()
 
-# Link spdlog, GLFW, and OpenGL
-if(WIN32)
-    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw opengl32)
-else()
-    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw)
+# Force /MD runtime for all configurations
+if(MSVC)
+    foreach(flag_var
+            CMAKE_C_FLAGS
+            CMAKE_C_FLAGS_DEBUG
+            CMAKE_C_FLAGS_RELEASE
+            CMAKE_C_FLAGS_RELWITHDEBINFO
+            CMAKE_C_FLAGS_MINSIZEREL
+            CMAKE_CXX_FLAGS
+            CMAKE_CXX_FLAGS_DEBUG
+            CMAKE_CXX_FLAGS_RELEASE
+            CMAKE_CXX_FLAGS_RELWITHDEBINFO
+            CMAKE_CXX_FLAGS_MINSIZEREL)
+        string(REGEX REPLACE "/MD[d]?" "/MD" ${flag_var} "${${flag_var}}")
+    endforeach()
 endif()
 
 # Output and intermediate folders
@@ -106,23 +113,10 @@ target_precompile_headers(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src/mppch.h)
 target_link_libraries(Sandbox PRIVATE Maple)
 
 # Include Maple headers
-target_include_directories(Sandbox PRIVATE
-    ${CMAKE_SOURCE_DIR}/Maple/src
-    ${CMAKE_SOURCE_DIR}/Maple/src/Platform
-)
+target_include_directories(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src)
 
 # Preprocessor definitions
 target_compile_definitions(Sandbox PUBLIC MP_PLATFORM_WINDOWS)
-
-# Force /MD for Sandbox as well
-if(MSVC)
-    foreach(flag_var
-            CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS_MINSIZEREL
-            CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_MINSIZEREL)
-        string(REPLACE "/MT" "/MD" ${flag_var} "${${flag_var}}")
-        string(REPLACE "/MTd" "/MD" ${flag_var} "${${flag_var}}")
-    endforeach()
-endif()
 
 # Output and intermediate folders
 set_target_properties(Sandbox PROPERTIES
