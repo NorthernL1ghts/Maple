@@ -42,7 +42,7 @@ FetchContent_MakeAvailable(glfw)
 file(GLOB_RECURSE MAPLE_SOURCES
     ${CMAKE_SOURCE_DIR}/Maple/src/*.cpp
     ${CMAKE_SOURCE_DIR}/Maple/src/*.h
-    ${CMAKE_SOURCE_DIR}/Maple/src/Platform/*.cpp   # Include platform folder
+    ${CMAKE_SOURCE_DIR}/Maple/src/Platform/*.cpp
     ${CMAKE_SOURCE_DIR}/Maple/src/Platform/*.h
 )
 
@@ -62,6 +62,16 @@ target_compile_definitions(Maple
     PRIVATE MP_BUILD_DLL
     PUBLIC MP_PLATFORM_WINDOWS
 )
+
+# Force /MD for all MSVC configurations
+if(MSVC)
+    foreach(flag_var
+            CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS_MINSIZEREL
+            CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_MINSIZEREL)
+        string(REPLACE "/MT" "/MD" ${flag_var} "${${flag_var}}")
+        string(REPLACE "/MTd" "/MD" ${flag_var} "${${flag_var}}")
+    endforeach()
+endif()
 
 # Link spdlog, GLFW, and OpenGL
 if(WIN32)
@@ -103,6 +113,16 @@ target_include_directories(Sandbox PRIVATE
 
 # Preprocessor definitions
 target_compile_definitions(Sandbox PUBLIC MP_PLATFORM_WINDOWS)
+
+# Force /MD for Sandbox as well
+if(MSVC)
+    foreach(flag_var
+            CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS_MINSIZEREL
+            CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_MINSIZEREL)
+        string(REPLACE "/MT" "/MD" ${flag_var} "${${flag_var}}")
+        string(REPLACE "/MTd" "/MD" ${flag_var} "${${flag_var}}")
+    endforeach()
+endif()
 
 # Output and intermediate folders
 set_target_properties(Sandbox PROPERTIES
