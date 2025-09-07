@@ -36,10 +36,34 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
-# GLAD
-set(GLAD_DIR "${CMAKE_SOURCE_DIR}/vendor/glad")
-add_library(glad "${GLAD_DIR}/src/glad.c")
-target_include_directories(glad PUBLIC "${GLAD_DIR}/include")
+# ImGui
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.89.8
+)
+FetchContent_MakeAvailable(imgui)
+
+# ============================
+# Build ImGui as a library
+# ============================
+file(GLOB IMGUI_SOURCES
+    ${imgui_SOURCE_DIR}/*.cpp
+)
+
+add_library(ImGui STATIC ${IMGUI_SOURCES})
+target_include_directories(ImGui PUBLIC ${imgui_SOURCE_DIR})
+target_compile_definitions(ImGui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
+
+# ============================
+# Glad (vendor folder)
+# ============================
+add_library(glad STATIC
+    ${CMAKE_SOURCE_DIR}/vendor/glad/src/glad.c
+)
+target_include_directories(glad PUBLIC
+    ${CMAKE_SOURCE_DIR}/vendor/glad/include
+)
 
 # ============================
 # Maple - Shared Library (DLL)
@@ -47,6 +71,8 @@ target_include_directories(glad PUBLIC "${GLAD_DIR}/include")
 file(GLOB_RECURSE MAPLE_SOURCES
     ${CMAKE_SOURCE_DIR}/Maple/src/*.cpp
     ${CMAKE_SOURCE_DIR}/Maple/src/*.h
+    ${CMAKE_SOURCE_DIR}/Maple/src/Platform/*.cpp
+    ${CMAKE_SOURCE_DIR}/Maple/src/Platform/*.h
 )
 
 add_library(Maple SHARED ${MAPLE_SOURCES})
@@ -63,29 +89,23 @@ target_compile_definitions(Maple
     PUBLIC MP_PLATFORM_WINDOWS
 )
 
-# Link spdlog, GLFW, GLAD, and OpenGL
+# Link dependencies
 if(WIN32)
-    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw glad opengl32)
+    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw glad opengl32 ImGui)
 else()
-    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw glad)
+    target_link_libraries(Maple PUBLIC spdlog::spdlog glfw glad ImGui)
 endif()
 
-# Force /MD runtime for all configurations
-if(MSVC)
-    foreach(flag_var
-            CMAKE_C_FLAGS
-            CMAKE_C_FLAGS_DEBUG
-            CMAKE_C_FLAGS_RELEASE
-            CMAKE_C_FLAGS_RELWITHDEBINFO
-            CMAKE_C_FLAGS_MINSIZEREL
-            CMAKE_CXX_FLAGS
-            CMAKE_CXX_FLAGS_DEBUG
-            CMAKE_CXX_FLAGS_RELEASE
-            CMAKE_CXX_FLAGS_RELWITHDEBINFO
-            CMAKE_CXX_FLAGS_MINSIZEREL)
-        string(REGEX REPLACE "/MD[d]?" "/MD" ${flag_var} "${${flag_var}}")
-    endforeach()
-endif()
+# Set /MD for all configurations
+foreach(flag_var
+        CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_DEBUG)
+    if(${flag_var} MATCHES "/MD" OR ${flag_var} MATCHES "/MT")
+        string(REGEX REPLACE "/MT" "/MD" ${flag_var} "${${flag_var}}")
+    else()
+        set(${flag_var} "${${flag_var}} /MD")
+    endif()
+endforeach()
 
 # Output and intermediate folders
 set_target_properties(Maple PROPERTIES
@@ -109,11 +129,11 @@ add_executable(Sandbox ${SANDBOX_SOURCES})
 # Precompiled header for Sandbox (optional)
 target_precompile_headers(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src/mppch.h)
 
-# Link Sandbox to Maple
-target_link_libraries(Sandbox PRIVATE Maple)
-
 # Include Maple headers
 target_include_directories(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/Maple/src)
+
+# Link Sandbox to Maple
+target_link_libraries(Sandbox PRIVATE Maple)
 
 # Preprocessor definitions
 target_compile_definitions(Sandbox PUBLIC MP_PLATFORM_WINDOWS)
